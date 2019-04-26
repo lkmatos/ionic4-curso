@@ -1,18 +1,33 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl} from '@angular/forms';
+
+import { AuthService } from './../../../core/services/auth.service';
+import { AuthProvider } from './../../../core/services/auth.types';
+import { OverlayService } from 'src/app/core/services/overlay.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss'],
+  styleUrls: ['./login.page.scss']
 })
 export class LoginPage implements OnInit {
-
   authForm: FormGroup;
+  authProviders = AuthProvider;
+  configs = {
+    isSignIn: true,
+    action: 'Login',
+    actionChange: 'Create account'
+  };
+  private nameControl = new FormControl('', [
+    Validators.required,
+    Validators.minLength(3)
+  ]);
 
   constructor(
-    private formBuilder: FormBuilder
-  ) { }
+    private formBuilder: FormBuilder,
+    private authService: AuthService,
+    private overlayService: OverlayService
+  ) {}
 
   ngOnInit() {
     this.createForm();
@@ -25,15 +40,44 @@ export class LoginPage implements OnInit {
     });
   }
 
+  get name(): FormControl {
+    return <FormControl>this.authForm.get("name");
+  }
   get email(): FormControl {
-    return <FormControl>this.authForm.get('email');
+    return <FormControl>this.authForm.get("email");
   }
   get password(): FormControl {
-    return <FormControl>this.authForm.get('password');
+    return <FormControl>this.authForm.get("password");
   }
 
-  onSubmit() {
-    console.log(this.authForm.value);
+  changeAuthAction() {
+    this.configs.isSignIn = !this.configs.isSignIn;
+    const { isSignIn } = this.configs;
+    this.configs.action = isSignIn ? 'Login' : 'Sign Up';
+    this.configs.actionChange = isSignIn ? 'Create account' : 'Aleready have an account';
+    !isSignIn
+      ? this.authForm.addControl('name', this.nameControl)
+      : this.authForm.removeControl('name');
   }
 
+  async onSubmit(provider: AuthProvider): Promise<void> {
+    const loading = await this.overlayService.loading();
+    try {
+      const credentials = await this.authService.authenticate({
+        isSignIn: this.configs.isSignIn,
+        user: this.authForm.value,
+        provider
+      });
+      console.log('Authenticated: ', credentials);
+      console.log('Redirecting...');
+    } catch (e) {
+      console.log('Auth error: ', e);
+      await this.overlayService.toast({
+        message: e.message
+      });
+    } finally {
+      loading.dismiss();
+    }
+
+  }
 }
