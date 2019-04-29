@@ -1,23 +1,21 @@
-import { ComponentsModule } from './../../components/components.module';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { TasksListPage } from './tasks-list.page';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { TaskSavePage } from './task-save.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: TasksListPage
+    component: TaskSavePage
   }
 ];
 
 @NgModule({
   imports: [
     SharedModule,
-    ComponentsModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [TasksListPage]
+  declarations: [TaskSavePage]
 })
-export class TasksListPageModule {}
+export class TaskSavePageModule {}

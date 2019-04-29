@@ -1,14 +1,29 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>tasks-list</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="logout()">
-        <ion-icon name="add"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-list *ngIf="(tasks$ | async) as tasks">
+    <ng-container *ngIf="tasks.length > 0; else noTasks">
+      <app-task-item 
+        *ngFor="let task of tasks"  
+        [task]="task" 
+        (update)="onUpdate($event)"
+        (delete)="onDelete($event)"
+        (done)="onDone($event)"
+      ></app-task-item>
+    </ng-container>
+    <ng-template #noTasks>
+      <ion-item lines="none">No Task yet...</ion-item>
+    </ng-template>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/tasks/create" routerDirection="forward">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 
 </ion-content>
